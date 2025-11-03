@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional
 @AllArgsConstructor
-public class AuthenticationService
+public class AuthenticationService implements IAuthenticationService
 {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -73,7 +73,7 @@ public class AuthenticationService
         }
 
         var user = userRepository.findByEmail(request.email()).orElseThrow(
-                () -> new AuthenticationException("User not found")
+                () -> new AuthenticationException("Invalid email or password")
         );
 
         String hashedId = idHasherUtil.encode(user.getId());

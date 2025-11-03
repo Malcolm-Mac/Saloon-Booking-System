@@ -19,7 +19,7 @@ import java.util.Optional;
 @Service
 @Transactional
 @AllArgsConstructor
-public class UserService
+public class UserService implements IUserService
 {
     private final UserRepository userRepository;
     private final IdHasherUtil idHasherUtil;

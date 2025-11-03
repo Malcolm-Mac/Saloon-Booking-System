@@ -5,6 +5,7 @@ import com.medelin.dto.AuthenticationRequest;
 import com.medelin.dto.CreateUserRequest;
 import com.medelin.dto.ErrorResponse;
 import com.medelin.service.AuthenticationService;
+import com.medelin.service.IAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "A. Authentication Management", description = "APIs for managing authentication")
 public class AuthenticationController
 {
-    private final AuthenticationService service;
+    private final IAuthenticationService IAuthenticationService;
 
     @Operation(
             summary = "1. Register a new user",
@@ -40,7 +41,7 @@ public class AuthenticationController
                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))
             ),
             @ApiResponse(
-                    responseCode = "401",
+                    responseCode = "400",
                     description = "Invalid request data (e.g., missing fields, invalid format)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
@@ -58,7 +59,7 @@ public class AuthenticationController
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid CreateUserRequest request)
     {
-        AuthenticationResponse created = service.createUser(request);
+        AuthenticationResponse created = IAuthenticationService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -71,6 +72,11 @@ public class AuthenticationController
                     responseCode = "200",
                     description = "User authenticated",
                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data (e.g., missing fields, invalid format)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -86,7 +92,7 @@ public class AuthenticationController
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request)
     {
-        AuthenticationResponse authenticated = service.authenticate(request);
+        AuthenticationResponse authenticated = IAuthenticationService.authenticate(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(authenticated);
     }
 }

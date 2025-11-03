@@ -2,7 +2,7 @@ package com.medelin.controller;
 
 import com.medelin.dto.*;
 import com.medelin.util.IdHasherUtil;
-import com.medelin.service.UserService;
+import com.medelin.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 public class UserController
 {
-    private final UserService userService;
+    private final IUserService IUserService;
     private final IdHasherUtil idHasherUtil;
 
     @Operation(
@@ -56,7 +56,7 @@ public class UserController
     )
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        Page<UserDetailResponse> users = userService.getUsers(pageable);
+        Page<UserDetailResponse> users = IUserService.getUsers(pageable);
         return ResponseEntity.ok(users);
     }
 
@@ -74,7 +74,7 @@ public class UserController
     )
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        Page<UserDetailResponse> users = userService.searchUsers(name,email,pageable);
+        Page<UserDetailResponse> users = IUserService.searchUsers(name,email,pageable);
         return ResponseEntity.ok(PaginatedResponse.from(users));
     }
 
@@ -88,7 +88,7 @@ public class UserController
     )
     {
         Long userId = idHasherUtil.decode(id);
-        UserDetailResponse user = userService.getUser(userId);
+        UserDetailResponse user = IUserService.getUser(userId);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
@@ -103,7 +103,7 @@ public class UserController
     )
     {
         Long userId = idHasherUtil.decode(id);
-        UserDetailResponse updatedUser = userService.updateUser(userId, request);
+        UserDetailResponse updatedUser = IUserService.updateUser(userId, request);
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -117,7 +117,7 @@ public class UserController
     )
     {
         Long userId = idHasherUtil.decode(id);
-        userService.deleteUser(userId);
+        IUserService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 }
