@@ -8,12 +8,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class UpdateUserRequestMapper
 {
-    public User toEntity(UpdateUserRequest request)
-    {
-        User user = new User();
-        user.setFullName(request.fullName());
-        user.setPhoneNumber(request.phoneNumber());
-        user.setRole(Role.valueOf(request.role().name().toUpperCase()));
-        return user;
+    public void updateEntity(UpdateUserRequest request, User user) {
+        if (request.fullName() != null) {
+            user.setFullName(request.fullName());
+        }
+        if (request.phoneNumber() != null) {
+            user.setPhoneNumber(request.phoneNumber());
+        }
+        if (request.role() != null) {
+            user.setRole(Role.valueOf(request.role().name().toUpperCase()));
+        }
     }
 }

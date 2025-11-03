@@ -1,6 +1,7 @@
 package com.medelin.service;
 
 import com.medelin.dto.UpdateUserRequest;
+import com.medelin.mapper.UpdateUserRequestMapper;
 import com.medelin.specification.UserSpecification;
 import com.medelin.util.IdHasherUtil;
 import com.medelin.dto.UserDetailResponse;
@@ -23,6 +24,7 @@ public class UserService implements IUserService
 {
     private final UserRepository userRepository;
     private final IdHasherUtil idHasherUtil;
+    private final UpdateUserRequestMapper updateUserRequestMapper;
 
     public Page<UserDetailResponse> getUsers(Pageable pageable)
     {
@@ -56,12 +58,10 @@ public class UserService implements IUserService
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User with this ID: " + userId));
 
-        user.setFullName(request.fullName());
-        user.setPhoneNumber(request.phoneNumber());
-        user.setRole(request.role());
+        updateUserRequestMapper.updateEntity(request, user);
 
-        User updateUser = userRepository.save(user);
-        return UserDetailResponse.from(updateUser, idHasherUtil);
+        User updatedUser = userRepository.save(user);
+        return UserDetailResponse.from(updatedUser, idHasherUtil);
     }
 
     public Page<UserDetailResponse> searchUsers(String name, String email, Pageable pageable)
