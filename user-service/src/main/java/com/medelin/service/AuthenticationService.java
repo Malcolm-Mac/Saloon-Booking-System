@@ -1,12 +1,10 @@
 package com.medelin.service;
 
+import com.medelin.dto.*;
 import com.medelin.exception.AuthenticationException;
 import com.medelin.exception.UserNotFoundException;
 import com.medelin.util.IdHasherUtil;
 import com.medelin.security.JwtService;
-import com.medelin.dto.AuthenticationRequest;
-import com.medelin.dto.AuthenticationResponse;
-import com.medelin.dto.CreateUserRequest;
 import com.medelin.exception.DuplicateEmailException;
 import com.medelin.mapper.CreateUserRequestMapper;
 import com.medelin.model.User;
@@ -31,6 +29,7 @@ public class AuthenticationService implements IAuthenticationService
     private final JwtService jwtService;
     private final IdHasherUtil idHasherUtil;
     private final AuthenticationManager  authenticationManager;
+    private final ICommunicationService communicationService;
 
     public AuthenticationResponse createUser(CreateUserRequest request)
     {
@@ -45,6 +44,7 @@ public class AuthenticationService implements IAuthenticationService
         User savedUser = userRepository.save(user);
 
         var jwtToken = jwtService.generateToken(savedUser);
+        var jwtRefreshToken = jwtService.generateRefreshToken(savedUser.getEmail());
         var expiresIn = jwtService.getExpirationTime();
         String hashedId = idHasherUtil.encode(savedUser.getId());
 
@@ -52,7 +52,8 @@ public class AuthenticationService implements IAuthenticationService
                 .builder()
                 .hashedId(hashedId)
                 .expiresIn(expiresIn)
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(jwtRefreshToken)
                 .build();
     }
 
@@ -80,13 +81,63 @@ public class AuthenticationService implements IAuthenticationService
 
         var jwtToken = jwtService.generateToken(user);
 
+        var jwtRefreshToken = jwtService.generateRefreshToken(user.getEmail());
+
         var expiresIn = jwtService.getExpirationTime();
 
         return AuthenticationResponse
                 .builder()
                 .hashedId(hashedId)
                 .expiresIn(expiresIn)
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(jwtRefreshToken)
                 .build();
+    }
+
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request)
+    {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(()-> new UserNotFoundException("User not found"));
+
+        String token = jwtService.generateResetPasswordToken(user);
+
+        String resetLink = "http://localhost:5001/reset-password?token=" + token;
+
+        communicationService.sendPasswordResetEmail(user.getEmail(), resetLink);
+
+         return new ForgotPasswordResponse("Reset link sent to email");
+    }
+
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request)
+    {
+        String email = jwtService.extractEmailFromResetToken(request.token());
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()-> new UserNotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        return new ResetPasswordResponse("Password reset successful");
+    }
+
+    public RefreshTokenResponse refreshToken(RefreshTokenRequest request)
+    {
+        String refreshToken = request.refreshToken();
+
+        if (!jwtService.isRefreshTokenValid(refreshToken))
+        {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+
+        String email = jwtService.extractEmailFromRefreshToken(refreshToken);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(email);
+
+        return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
 }

@@ -49,14 +49,14 @@ public class UserController
             )
     })
     @GetMapping
-    public ResponseEntity<Page<UserDetailResponse>> getUsers(
+    public ResponseEntity<Page<UserInfoResponse>> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "name") String sort
+            @RequestParam(defaultValue = "fullName") String sort
     )
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        Page<UserDetailResponse> users = IUserService.getUsers(pageable);
+        Page<UserInfoResponse> users = IUserService.getUsers(pageable);
         return ResponseEntity.ok(users);
     }
 
@@ -70,7 +70,7 @@ public class UserController
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email,
-            @RequestParam(defaultValue = "name") String sort
+            @RequestParam(defaultValue = "fullName") String sort
     )
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));

@@ -1,0 +1,14 @@
+### Step 1: Authenticate and store token
+POST http://localhost:5001/api/v1/auth/authenticate
+Content-Type: application/json
+
+{
+  "email": "malcolmtsimo12@gmail.com",
+  "password": "1234567R8SeF@??"
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+### Step 2: Use stored token for authenticated request
+GET http://localhost:5001/api/v1/users/1
+Authorization: Bearer {{auth_token}}

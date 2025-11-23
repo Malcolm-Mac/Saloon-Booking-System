@@ -1,6 +1,7 @@
 package com.medelin.service;
 
 import com.medelin.dto.UpdateUserRequest;
+import com.medelin.dto.UserInfoResponse;
 import com.medelin.mapper.UpdateUserRequestMapper;
 import com.medelin.specification.UserSpecification;
 import com.medelin.util.IdHasherUtil;
@@ -26,11 +27,11 @@ public class UserService implements IUserService
     private final IdHasherUtil idHasherUtil;
     private final UpdateUserRequestMapper updateUserRequestMapper;
 
-    public Page<UserDetailResponse> getUsers(Pageable pageable)
+    public Page<UserInfoResponse> getUsers(Pageable pageable)
     {
         return userRepository
                 .findAll(pageable)
-                .map(user -> UserDetailResponse.from(user,idHasherUtil));
+                .map(UserInfoResponse::from);
     }
 
     public UserDetailResponse getUser(Long id)
